@@ -37,7 +37,6 @@ namespace UsersApi.Services
             {
                 throw new ApplicationException("User not authenticated");
             }
-            _tokenService.GenerateToken(dto.UserName);
         }
     }
 }
