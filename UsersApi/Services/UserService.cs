@@ -10,12 +10,14 @@ namespace UsersApi.Services
         private IMapper _mapper;
         private UserManager<User> _userManager;
         public SignInManager<User> _singInManager;
+        private TokenService _tokenService;
 
-        public UserService(IMapper mapper, UserManager<User> userManager, SignInManager<User> signInManager)
+        public UserService(IMapper mapper, UserManager<User> userManager, SignInManager<User> signInManager, TokenService tokenService)
         {
             _mapper = mapper;
             _userManager = userManager;
             _singInManager = signInManager;
+            _tokenService = tokenService;
         }
 
         public async Task Register(CreateUserDto dto)
@@ -30,13 +32,18 @@ namespace UsersApi.Services
             }
         }
 
-        public async Task Login(LoginUserDto dto)
+        public async Task<string> Login(LoginUserDto dto)
         {
             var result = await _singInManager.PasswordSignInAsync(dto.UserName, dto.Password, false, false);
             if(!result.Succeeded)
             {
                 throw new ApplicationException("User not authenticated");
             }
+            var user = _singInManager.UserManager.Users.FirstOrDefault(u => u.NormalizedUserName == dto.UserName.ToUpper());
+
+            var token = _tokenService.GenerateToken(user);
+
+            return token;
         }
     }
 }
